@@ -29,6 +29,7 @@ describe('Listings CRUD tests', function() {
         done();
       });
   });
+
   it('should be able to retrieve a single listing', function(done) {
     Listing.findOne({name: 'Library West'}, function(err, listing) {
       if(err) {
@@ -136,7 +137,7 @@ describe('Listings CRUD tests', function() {
         id2 = res.body._id;
         done();
       });
-  });
+  }); 
 
   it('should be able to delete the listing with coordinates', function(done) {
     agent.delete('/api/listings/' + id2)

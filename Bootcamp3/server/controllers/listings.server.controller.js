@@ -1,7 +1,7 @@
 
 /* Dependencies */
 var mongoose = require('mongoose'), 
-    Listing = require('../models/listings.server.model.js'),
+    Listing = require('../models/listings.server.model.js'), //file with the listing schema
     coordinates = require('./coordinates.server.controller.js');
     
 /*
@@ -21,13 +21,15 @@ var mongoose = require('mongoose'),
   https://adrianmejia.com/getting-started-with-node-js-modules-require-exports-imports-npm-and-beyond/
  */
 
+ //exporting to listings.server.controller.js
 /* Create a listing */
-exports.create = function(req, res) {
-
+exports.create = function(req, res) 
+{
   /* Instantiate a Listing */
   var listing = new Listing(req.body);
 
   /* save the coordinates (located in req.results if there is an address property) */
+  
   if(req.results) {
     listing.coordinates = {
       latitude: req.results.lat, 
@@ -47,13 +49,14 @@ exports.create = function(req, res) {
   });
 };
 
-/* Show the current listing */
+/* Show the current listing */ 
 exports.read = function(req, res) {
   /* send back the listing as json from the request */
   res.json(req.listing);
 };
 
-/* Update a listing - note the order in which this function is called by the router*/
+//Update a listing - note the order in which this function is called by the router
+
 exports.update = function(req, res) {
   var listing = req.listing;
 
@@ -63,6 +66,32 @@ exports.update = function(req, res) {
  
   /* Save the listing */
 
+
+  Listing.findById(listing.id, function(err, listing)
+  {
+    if(err){
+      res.status(400).send(err);
+    }
+
+    listing.name = req.body.name;
+    listing.code = req.body.code;
+    listing.address =  req.body.address;
+
+    if(req.results) {
+      listing.coordinates = {
+        latitude: req.results.lat, 
+        longitude: req.results.lng
+      };
+    } 
+    //save
+    listing.save(function (err){
+      if(err)
+      {res.status(400).send(err);}      
+      res.send(listing);
+      
+    });
+  });
+
 };
 
 /* Delete a listing */
@@ -70,12 +99,39 @@ exports.delete = function(req, res) {
   var listing = req.listing;
 
   /* Add your code to remove the listins */
+  Listing.findByIdAndRemove(listing.id, function(err, listing)
+   {
+    if(err)
+    {
+      res.status(404).send(err);
+    }
+
+    res.send(listing);
+    
+  });
 
 };
 
-/* Retreive all the directory listings, sorted alphabetically by listing code */
+/* Retrieve all the directory listings, sorted alphabetically by listing code */
+/* Add your code */
+  
 exports.list = function(req, res) {
-  /* Add your code */
+  
+
+  Listing.find().sort({code:1}).exec((err,listings)=>
+  {
+    if(err)
+    {
+      res.status(404).send(err);
+    }
+    else
+    {
+      res.send(listings);
+      //console.log(listing);
+    }
+
+  } );
+
 };
 
 /* 

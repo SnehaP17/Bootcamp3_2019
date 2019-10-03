@@ -1,7 +1,7 @@
-var path = require('path'),  
+var path = require('path'),  //provides utilities for working with file and directory paths.
     express = require('express'),  //refers to Express the middleware helper for Node.js 
     mongoose = require('mongoose'),
-    morgan = require('morgan'),
+    morgan = require('morgan'), // used to log requests to the console for debugging purposes.
     bodyParser = require('body-parser'),
     config = require('./config'),
     listingsRouter = require('../routes/listings.server.routes'), 
@@ -9,7 +9,7 @@ var path = require('path'),
 
 module.exports.init = function() {
   //connect to database
-  mongoose.connect(config.db.uri, { useNewUrlParser: true });
+  mongoose.connect(config.db.uri, { useNewUrlParser: true }, {useUnifiedTopology: true});
     mongoose.set('useCreateIndex', true);
     mongoose.set('useFindAndModify', false);
 
@@ -22,7 +22,10 @@ module.exports.init = function() {
   //body parsing middleware 
   app.use(bodyParser.json());
 
+  //the middleware function is executed when the base of the requested path matches path.
   /* serve static files - see http://expressjs.com/en/starter/static-files.html */
+  /*To serve static files such as images, CSS files, and JavaScript files, built-in middleware function in Express. 
+express.static(root, [options]) */
   app.use('/', express.static(__dirname + '/../../client'));
 
 /* The next three middleware are important to the API that we are bulding */
@@ -32,9 +35,9 @@ module.exports.init = function() {
      use the listings router middleware for requests to the api 
      check the variables list above
   */
-  app.use('/api/listings');
+  app.use('/api/listings', listingsRouter);
 
-
+  //Routes HTTP POST requests to the specified path with the specified callback functions.
    /* Request Handler for coordinates
       This is a server wrapper around Open Cage Data Geocoding API to get latitude + longitude coordinates from address */
   app.post('/api/coordinates', getCoordinates, function(req, res) {
@@ -52,7 +55,10 @@ module.exports.init = function() {
       The path.resolve() method returns a string and resolves a sequence of paths or path segments into an absolute path.
       If no path segments are passed, path.resolve() will return the absolute path of the current working directory.
    */
-   //res.sendFile(path.resolve(...));
+
+   //path.resolve helps resolve the path relative to a computer by appending the absolute path of the working directory to 
+   //whatever path passed in
+   res.sendFile(path.resolve('\client','index.html'));
   });
   
   return app;
